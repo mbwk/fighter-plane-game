@@ -47,7 +47,6 @@ function main()
 
         //enemy.x = 32 + (Math.random() * (cvs.width - 128));
         //enemy.y = 32 + (Math.random() * (cvs.width - 128));
-        console.log("enemy: " + enemy.x + " " + enemy.y);
     };
 
     var checkbounds = function (killer, victim) {
@@ -146,26 +145,19 @@ function main()
             scroller = -550;
         }
 
+        // later, check if player is alive first
         draw_img(player);
-        draw_img(enemy);
 
-        // stats
-        /*
-        ctx.fillStyle = "rgb(250, 250, 150)";
-        ctx.strokeStyle = "rgb(0, 0, 0)";
-        ctx.font = "24px Helvetica";
-        ctx.textAlign = "left";
-        ctx.textBaseLine = "top";
+        for (var enemy in enemies) {
+            draw_img(enemy);
+        }
+        for (var bullet in playerbullets) {
+            draw_img(bullet);
+        }
+        for (var bullet in enemybullets) {
+            draw_img(bullet);
+        }
 
-        ctx.strokeText("Kills: " + enemieskilled, 14, 24);
-        ctx.fillText("Kills: " + enemieskilled, 14, 24);
-
-        ctx.strokeText("Distance: " + disttrav, 154, 24);
-        ctx.fillText("Distance: " + disttrav, 154, 24);
-
-        ctx.strokeText("HP: " + player.hitpoints + "/" + player.maxhp, 324, 24);
-        ctx.fillText("HP: " + player.hitpoints + "/" + player.maxhp, 324, 24);
-        */
         writestats(player);
 
         ++delay;
