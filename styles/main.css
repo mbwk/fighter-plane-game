@@ -1,0 +1,40 @@
+body {
+    margin-left: 400px;
+    margin-right: 400px;
+}
+
+header {
+    text-align: center;
+}
+
+nav {
+    text-align: center;
+}
+
+nav ul {
+    margin: 0;
+    padding: 0;
+}
+
+nav ul li {
+    display: inline;
+    padding 0 lem 0 0;
+}
+
+section {
+}
+
+canvas {
+    cursor: crosshair;
+}
+
+footer {
+}
+
+h1 {
+}
+
+h2 {
+}
+
+
