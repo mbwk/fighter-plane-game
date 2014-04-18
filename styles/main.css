@@ -1,6 +1,6 @@
 body {
-    margin-left: 400px;
-    margin-right: 400px;
+    margin-left: 280px;
+    margin-right: 280px;
 }
 
 header {
@@ -25,7 +25,7 @@ section {
 }
 
 canvas {
-    cursor: crosshair;
+    cursor: auto;
 }
 
 footer {

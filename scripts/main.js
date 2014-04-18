@@ -15,7 +15,10 @@ function main()
     var playerbullets = [];
     var enemybullets = [];
 
-    /* game objects */
+    // test enemy
+    var testenemy = new EnemyKMT(300, 100);
+
+    //game objects
     var enemieskilled = 0;
 
     // handle keyboard controls
@@ -31,53 +34,55 @@ function main()
         MOUSEPOS = get_mouse_xy(evt);
     }, false);
 
+    var stage = 0;
+    /*
     var newstage = function () {
         ++stage;
         for (var i = 0; i < (stage + 10) && i < 20; ++i) {
             var x = Math.floor( Math.random() * ( 512 - 0 + 1 ));
             var y = Math.floor( Math.random() * ( 0 - 1200 + 1 ) - 1200 );
-            enemies.push(new EnemyKMT());
+            enemies.push(new EnemyKMT(x, y));
         }
-    }
+        enemies.push(new EnemyKMT(300, 100));
+    };
+    */
 
     // reset game
     var reset = function () {
         player.x = cvs.width / 2;
         player.y = cvs.height * 0.8;
-
-        //enemy.x = 32 + (Math.random() * (cvs.width - 128));
-        //enemy.y = 32 + (Math.random() * (cvs.width - 128));
+        //newstage();
     };
 
     var checkbounds = function (killer, victim) {
         var inleftbound = false, inrightbound = false,
             inbotbound = false, intopbound = false;
-        inleftbound = killer.exright() > victim.exleft();
-        inrightbound = killer.exleft() < victim.exright();
-        intopbound = killer.upper() > victim.lower();
-        inbotbound = killer.lower() < victim.upper();
 
-        if ( (inbotbound && (inleftbound || inrightbound))
-                || (intopbound (inleftbound || inrightbound)) ) {
+        inleftbound = killer.exright > victim.exleft;
+        inrightbound = killer.exleft < victim.exright;
+        intopbound = killer.upper > victim.lower;
+        inbotbound = killer.lower < victim.upper;
+
+        if ( (inbotbound && (inleftbound || inrightbound)) || (intopbound && (inleftbound || inrightbound)) ) {
                     return true;
         }
         return false;
-    }
+    };
 
     var checkcollisions = function () {
         // has a bullet gone out of bounds?
         
-        for (var bullet in playerbullets) {
-            if (bullet.lower() < 0) {
-                var index = playerbullets.indexOf(bullet);
-                playerbullets.splice(bullet, 1);
+        for (var pbullet in playerbullets) {
+            if (pbullet.lower() < 0) {
+                var pindex = playerbullets.indexOf(pbullet);
+                playerbullets.splice(pindex, 1);
             }
         }
         
-        for (var bullet in enemybullets) {
-            if (bullet.upper() > cvs.height) {
-                var index = enemybullets.indexOf(bullet);
-                enemybullets.splice(index, 1);
+        for (var ebullet in enemybullets) {
+            if (ebullet.upper() > cvs.height) {
+                var eindex = enemybullets.indexOf(ebullet);
+                enemybullets.splice(eindex, 1);
             }
         }
 
@@ -96,19 +101,20 @@ function main()
         }
 
         
-    }
+    };
 
-    var moveobjects = function () {
+    var moveobjects = function (modifier) {
         for (var enemy in enemies) {
-            enemy.move();
+            //enemy.move(modifier);
+            enemy.y += enemy.speed * modifier;
         }
-        for (var bullet in playerbullets) {
-            bullet.move();
+        for (var pbullet in playerbullets) {
+            pbullet.move(modifier);
         }
-        for (var bullet in enemybullets) {
-            bullet.move();
+        for (var ebullet in enemybullets) {
+            ebullet.move(modifier);
         }
-    }
+    };
 
     var update = function (modifier) {
         if (38 in keysdown && player.upper() > 36 ) { // up
@@ -122,7 +128,7 @@ function main()
         if (37 in keysdown && player.exleft() > 16 ) { // left
             // hero.x -= hero.speed * modifier;
             player.move("left", modifier);
-        } else if (39 in keysdown && player.exright() < cvs.width - 16 ) { // right
+        } else if (39 in keysdown && player.exright() < gamewidth - 16 ) { // right
             // hero.x += hero.speed * modifier;
             player.move("right", modifier);
         } else {
@@ -131,40 +137,51 @@ function main()
 
         // bring world to life
         checkcollisions();
-        moveobjects();
+        moveobjects(modifier);
         
     };
 
-    var scroller = -550;
+    var bglength = 1033;
+    var origin = (-1 * bglength) + cvs.height;
+    var scroller = origin;
     var delay = 0;
     /* draw */
     var render = function () {
-        ctx.drawImage(bgImg, 0, scroller);
-        scroller += 2;
-        if (scroller > 0) {
-            scroller = -550;
-        }
+        if (gameover) {
+            drawgameover();
+        } else if (gamestate) {
 
-        // later, check if player is alive first
-        draw_img(player);
+            ctx.drawImage(bgImg, 0, scroller);
+            scroller += 2;
 
-        for (var enemy in enemies) {
-            draw_img(enemy);
-        }
-        for (var bullet in playerbullets) {
-            draw_img(bullet);
-        }
-        for (var bullet in enemybullets) {
-            draw_img(bullet);
-        }
+            if (scroller > 0) {
+                scroller = origin;
+            }
 
-        writestats(player);
+            // later, check if player is alive first
+            draw_img(player);
 
-        ++delay;
+            for (var enemy in enemies) {
+                draw_img(enemy);
+                console.log("drawing");
+            }
+            for (var pbullet in playerbullets) {
+                draw_img(pbullet);
+            }
+            for (var ebullet in enemybullets) {
+                draw_img(ebullet);
+            }
 
-        if (delay > 25) {
-            ++player.distance;
-            delay = 0;
+            writestats(player);
+
+            ++delay;
+
+            if (delay > 25) {
+                ++player.distance;
+                delay = 0;
+            }
+        } else if (menustate) {
+            drawmenu();
         }
     };
 
