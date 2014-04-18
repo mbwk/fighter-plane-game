@@ -2,8 +2,7 @@
 var spritessy = {};
 spritessy.imgs = [];
 
-// bullet is shared between player* and enemy* bullet
-
+// image preload functions
 function preloadsprites()
 {
     spritessy.imgs["bullet"] = new Image();
@@ -23,16 +22,6 @@ function preloadsprites()
             spritessy.imgs[i].rdy = true;
         }
     }
-}
-
-function spritesloaded()
-{
-    for (var i in spritessy.imgs) {
-        if (spritessy.imgs[i].rdy === false) {
-            return false;
-        }
-    }
-    return true;
 }
 
 function allspritesready(sprites)
@@ -76,7 +65,7 @@ function GameEntity()
     return ent;
 }
 
-function PlayerBullet(playerx, playery)
+function PlayerBullet(playerx, playery, playerdmg)
 {
     var pbullet = new GameEntity();
 
@@ -86,7 +75,7 @@ function PlayerBullet(playerx, playery)
     pbullet.speed = 512;
     pbullet.height = 32;
     pbullet.width = 16;
-    pbullet.damage = 2;
+    pbullet.damage = playerdmg;
 
     pbullet.rdy = spritessy.bullet.rdy;
 
@@ -97,7 +86,7 @@ function PlayerBullet(playerx, playery)
     return pbullet;
 }
 
-function EnemyBullet(enemyx, enemyy, damage)
+function EnemyBullet(enemyx, enemyy, enemydmg)
 {
 }
 
@@ -108,9 +97,14 @@ function Player()
 
     /* member variables */
     player.speed = 256;
-    player.height = 64;
-    player.width = 86;
-    player.hitpoints = 20;
+    player.height = 68;
+    player.width = 87;
+    player.maxhp = 20;
+    player.hitpoints = player.maxhp;
+    player.damage = 2;
+
+    player.kills = 0;
+    player.distance = 0;
 
     player.sprites = [];
     player.sprites["level"] = new Image();
@@ -147,6 +141,11 @@ function Player()
         }
     }
 
+    player.fire = function () {
+        var bullet = new PlayerBullet(player.x, player.y, player.strength);
+        return bullet;
+    }
+
     player.level = function () {
         player.img = player.sprites["level"];
     }
@@ -169,9 +168,10 @@ function Enemy()
 
     /* member variables */
     enemy.speed = 128;
-    enemy.height = 64;
-    enemy.width = 86;
+    enemy.height = 68;
+    enemy.width = 87;
     enemy.hitpoints = 2;
+    enemy.damage = 1;
 
     enemy.img = new Image();
     enemy.rdy = false;

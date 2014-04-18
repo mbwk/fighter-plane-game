@@ -2,25 +2,18 @@ function main()
 {
     /* init imgs */
     preloadsprites();
-/*
-    while (!spritesloaded()) {
-        ctx.font = "18px 'Monospace'";
-        ctx.fillStyle = "black";
-        ctx.fillText("loading", cvs.width * 0.5, cvs.height * 0.5);
-    }
-*/
+
     var bgRdy = false;
     var bgImg = new Image();
     bgImg.onload = function () {
         bgRdy = true;
     };
-    bgImg.src = "imgs/background.png";
+    bgImg.src = "imgs/testbg.png";
 
     var player = new Player();
     var enemies = [];
-    enemies.push(new EnemyKMT());
-    var enemy = new EnemyKMT();
-    var enemy2 = new EnemyKMT();
+    var playerbullets = [];
+    var enemybullets = [];
 
     /* game objects */
     var enemieskilled = 0;
@@ -38,6 +31,15 @@ function main()
         MOUSEPOS = get_mouse_xy(evt);
     }, false);
 
+    var newstage = function () {
+        ++stage;
+        for (var i = 0; i < (stage + 10) && i < 20; ++i) {
+            var x = Math.floor( Math.random() * ( 512 - 0 + 1 ));
+            var y = Math.floor( Math.random() * ( 0 - 1200 + 1 ) - 1200 );
+            enemies.push(new EnemyKMT());
+        }
+    }
+
     // reset game
     var reset = function () {
         player.x = cvs.width / 2;
@@ -45,69 +47,136 @@ function main()
 
         //enemy.x = 32 + (Math.random() * (cvs.width - 128));
         //enemy.y = 32 + (Math.random() * (cvs.width - 128));
-        enemy.x = cvs.width * 0.5;
-        enemy.y = cvs.height * 0.2;
         console.log("enemy: " + enemy.x + " " + enemy.y);
     };
 
+    var checkbounds = function (killer, victim) {
+        var inleftbound = false, inrightbound = false,
+            inbotbound = false, intopbound = false;
+        inleftbound = killer.exright() > victim.exleft();
+        inrightbound = killer.exleft() < victim.exright();
+        intopbound = killer.upper() > victim.lower();
+        inbotbound = killer.lower() < victim.upper();
+
+        if ( (inbotbound && (inleftbound || inrightbound))
+                || (intopbound (inleftbound || inrightbound)) ) {
+                    return true;
+        }
+        return false;
+    }
+
+    var checkcollisions = function () {
+        // has a bullet gone out of bounds?
+        
+        for (var bullet in playerbullets) {
+            if (bullet.lower() < 0) {
+                var index = playerbullets.indexOf(bullet);
+                playerbullets.splice(bullet, 1);
+            }
+        }
+        
+        for (var bullet in enemybullets) {
+            if (bullet.upper() > cvs.height) {
+                var index = enemybullets.indexOf(bullet);
+                enemybullets.splice(index, 1);
+            }
+        }
+
+        // has the player had a mid air collision?
+        for (var enemy in enemies) {
+            if ( checkbounds(enemy, player) ) {
+                player.hitby(enemy);
+            }
+        }
+
+        // has an enemy bullet hit our player?
+        for (var bullet in enemybullets) {
+            if ( checkbounds(bullet, player) ) {
+                player.hitby(bullet);
+            }
+        }
+
+        
+    }
+
+    var moveobjects = function () {
+        for (var enemy in enemies) {
+            enemy.move();
+        }
+        for (var bullet in playerbullets) {
+            bullet.move();
+        }
+        for (var bullet in enemybullets) {
+            bullet.move();
+        }
+    }
+
     var update = function (modifier) {
-        if (38 in keysdown && player.upper() > 32 ) { // up
+        if (38 in keysdown && player.upper() > 36 ) { // up
             // hero.y -= (hero.speed * 0.75) * modifier;
             player.move("up", modifier);
         }
-        if (40 in keysdown && player.lower() < cvs.height - 32 ) { // down
+        if (40 in keysdown && player.lower() < cvs.height - 16 ) { // down
             // hero.y += (hero.speed * 1.25) * modifier;
             player.move("down", modifier);
         }
-        if (37 in keysdown && player.exleft() > 32 ) { // left
+        if (37 in keysdown && player.exleft() > 16 ) { // left
             // hero.x -= hero.speed * modifier;
             player.move("left", modifier);
-        } else if (39 in keysdown && player.exright() < cvs.width - 32 ) { // right
+        } else if (39 in keysdown && player.exright() < cvs.width - 16 ) { // right
             // hero.x += hero.speed * modifier;
             player.move("right", modifier);
         } else {
             player.level();
         }
 
-        if (
-            player.x <= (enemy.x + 32)
-            && enemy.x <= (player.x + 32)
-            && player.y <= (enemy.y + 32)
-            && enemy.y <= (player.y + 32)
-            ) {
-                ++enemieskilled;
-                reset();
-        }
+        // bring world to life
+        checkcollisions();
+        moveobjects();
+        
     };
-    
+
+    var scroller = -550;
+    var delay = 0;
     /* draw */
     var render = function () {
-        if (bgRdy) {
-            ctx.drawImage(bgImg, 0, 0);
-        }
-        if (player.rdy) {
-            //ctx.save();
-            //ctx.translate(hero.x, hero.y);
-            //ctx.translate(16, 16);
-            //ctx.rotate(get_radians_for(hero, MOUSEPOS));
-            //ctx.drawImage(player.curimg, player.x, player.y);
-            draw_img(player);
-            //ctx.restore();
-        }
-        if (enemy.rdy) {
-            console.log("drawing");
-            draw_img(enemy);
+        ctx.drawImage(bgImg, 0, scroller);
+        scroller += 2;
+        if (scroller > 0) {
+            scroller = -550;
         }
 
-        // Score
-        ctx. fillStyle = "rgb(250, 250, 250)";
+        draw_img(player);
+        draw_img(enemy);
+
+        // stats
+        /*
+        ctx.fillStyle = "rgb(250, 250, 150)";
+        ctx.strokeStyle = "rgb(0, 0, 0)";
         ctx.font = "24px Helvetica";
         ctx.textAlign = "left";
         ctx.textBaseLine = "top";
-        ctx.fillText("Monsters caught: " + enemieskilled, 32, 32);
+
+        ctx.strokeText("Kills: " + enemieskilled, 14, 24);
+        ctx.fillText("Kills: " + enemieskilled, 14, 24);
+
+        ctx.strokeText("Distance: " + disttrav, 154, 24);
+        ctx.fillText("Distance: " + disttrav, 154, 24);
+
+        ctx.strokeText("HP: " + player.hitpoints + "/" + player.maxhp, 324, 24);
+        ctx.fillText("HP: " + player.hitpoints + "/" + player.maxhp, 324, 24);
+        */
+        writestats(player);
+
+        ++delay;
+
+        if (delay > 25) {
+            ++player.distance;
+            delay = 0;
+        }
     };
 
-    var init = function () {
+    var gameloop = function () {
         var now = Date.now();
         var delta = now - then;
 
@@ -115,11 +184,15 @@ function main()
         render();
 
         then = now;
+        requestAnimationFrame(function () {
+            gameloop();
+        });
     };
 
     reset();
     var then = Date.now();
-    setInterval(init, 1);
+    requestAnimationFrame(gameloop);
+    //setInterval(init, 1);
 
 }
 
