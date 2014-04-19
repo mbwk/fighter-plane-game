@@ -138,6 +138,13 @@ function Player(spr, newx, newy)
         player.img = player.sprites.level;
     };
 
+    player.hitsound = new Howl({ urls: ['sounds/hit.wav']});
+
+    player.hitby = function (attacker) {
+        player.hitsound.play();
+        player.hitpoints -= attacker.damage;
+    };
+
     return player;
 }
 

@@ -17,13 +17,13 @@ function main()
         enemies.push(new EnemyKMT(300, 100));
     };
     */
-    
+
     var gameloop = function () {
         var now = Date.now();
         var delta = now - then;
 
         gs.update(delta / 1000);
-        myRenderer.render(gs.player, gs.enemieslist, gs.playerbullets, gs.enemybullets);
+        myRenderer.render(gs);
 
         then = now;
         requestAnimationFrame(function () {

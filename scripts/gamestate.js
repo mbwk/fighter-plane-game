@@ -78,15 +78,17 @@ function GameState(spr)
         var inleftbound = false, inrightbound = false,
             inbotbound = false, intopbound = false;
 
-        inleftbound = attacker.exright() > victim.exleft();
-        inrightbound = attacker.exleft() < victim.exright();
-        intopbound = attacker.upper() > victim.lower();
-        inbotbound = attacker.lower() < victim.upper();
+        // inleftbound = attacker.x > victim.exleft();
+        // inrightbound = attacker.x < victim.exright();
+        // intopbound = attacker.y < victim.lower();
+        // inbotbound = attacker.y > victim.upper();
 
-        if ( (inbotbound && (inleftbound || inrightbound)) || (intopbound && (inleftbound || inrightbound)) ) {
-                    return true;
-        }
-        return false;
+        inleftbound = attacker.exright() >= victim.exleft();
+        inrightbound = attacker.exleft() <= victim.exright();
+        intopbound = attacker.upper() + 20 <= victim.lower();
+        inbotbound = attacker.lower() - 20 >= victim.upper();
+
+        return (inleftbound && inrightbound && intopbound && inbotbound);
     };
 
     gmst.checkcollisions = function () {
@@ -103,10 +105,18 @@ function GameState(spr)
             }
         }
 
+        // has an enemy gone out of bounds?
+        for (i = gmst.enemieslist.length - 1; i >= 0; --i) {
+            if (gmst.enemieslist[i].y > cvs.height + 80) {
+                gmst.enemieslist.splice(i, 1);
+            }
+        }
+
         // has the player had a mid air collision?
         for (i = gmst.enemieslist.length - 1; i >= 0; --i) {
-            if ( gmst.checkbounds(gmst.enemieslist[i], player) ) {
-                player.hitby(enemieslist[i]);
+            if ( gmst.checkbounds(gmst.enemieslist[i], gmst.player) ) {
+                ++gmst.player.kills;
+                gmst.player.hitby(gmst.enemieslist[i]);
                 gmst.enemieslist.splice(i, 1);
             }
         }
@@ -114,12 +124,26 @@ function GameState(spr)
         // has an enemy bullet hit our player?
         for (i = gmst.enemybullets.length - 1; i >= 0; --i) {
             if ( gmst.checkbounds(gmst.enemybullets[i], player) ) {
-                player.hitby(bullet);
+                gmst.player.hitby(gmst.enemybullets[i]);
             }
         }
     };
 
     gmst.update = function (modifier) {
+
+        if (gmst.gameover) {
+            return;
+        }
+        if (gmst.gamemenu) {
+            return;
+        }
+        if (gmst.gamepaused) {
+            if (85 in gmst.keysdown) {
+                gmst.gamepaused = false;
+            }
+            return;
+        }
+
         if (38 in gmst.keysdown && gmst.player.upper() > 36 ) { // up
             // hero.y -= (hero.speed * 0.75) * modifier;
             gmst.player.move("up", modifier);
@@ -153,12 +177,20 @@ function GameState(spr)
             gmst.attemptshot();
         }
 
+        if (80 in gmst.keysdown) {
+            gmst.gamepaused = true;
+        }
+
         // bring world to life
-        //gmst.checkcollisions();
+        gmst.checkcollisions();
         gmst.moveobjects(modifier);
 
         if (gmst.enemieslist.length < 1) {
             gmst.spawnenemies();
+        }
+
+        if (gmst.player.hitpoints < 1) {
+            gmst.gameover = true;
         }
 
     };
