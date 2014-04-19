@@ -1,46 +1,3 @@
-"use strict";
-
-// these sprites are used by several objects on the screen at once
-var spritessy = {};
-spritessy.imgs = [];
-
-// image preload functions
-function preloadsprites()
-{
-    spritessy.imgs.bullet = new Image();
-    spritessy.imgs.enemy = new Image();
-    spritessy.imgs.enemykmt = new Image();
-
-    spritessy.imgs.bullet.rdy = false;
-    spritessy.imgs.enemy.rdy = false;
-    spritessy.imgs.enemykmt.rdy = false;
-
-    spritessy.imgs.bullet.src = "imgs/bullet.png";
-    spritessy.imgs.enemy.src = "imgs/enemydefault.png";
-    spritessy.imgs.enemykmt.src = "imgs/enemykmt.png";
-
-    spritessy.imgs.bullet.onload = function () {
-        spritessy.imgs.bullet.rdy = true;
-    };
-    spritessy.imgs.enemy.onload = function () {
-        spritessy.imgs.enemy.rdy = true;
-    };
-    spritessy.imgs.enemykmt.onload = function () {
-        spritessy.imgs.enemykmt.rdy = true;
-    };
-
-}
-
-function allspritesready(sprites)
-{
-    for (var i in sprites) {
-        if (sprites[i].reader === false) {
-            return false;
-        }
-    }
-    return true;
-}
-
 function GameEntity()
 {
     var ent = {};
@@ -72,7 +29,7 @@ function GameEntity()
     return ent;
 }
 
-function PlayerBullet(playerx, playery, playerdmg)
+function PlayerBullet(spr, playerx, playery, playerdmg)
 {
     var pbullet = new GameEntity();
 
@@ -83,7 +40,8 @@ function PlayerBullet(playerx, playery, playerdmg)
     pbullet.width = 16;
     pbullet.damage = playerdmg;
 
-    pbullet.rdy = spritessy.bullet.rdy;
+    pbullet.img = spr.imgs.bullet;
+    pbullet.rdy = spr.imgs.bullet.rdy;
 
     pbullet.move = function (modifier) {
         pbullet.y -= (pbullet.speed * modifier);
@@ -92,15 +50,17 @@ function PlayerBullet(playerx, playery, playerdmg)
     return pbullet;
 }
 
-function EnemyBullet(enemyx, enemyy, enemydmg)
+function EnemyBullet(spr, enemyx, enemyy, enemydmg)
 {
 }
 
-function Player()
+function Player(spr, newx, newy)
 {
     // var player = {};
     var player = new GameEntity();
 
+    player.x = newx;
+    player.y = newy;
     player.speed = 256;
     player.height = 68;
     player.width = 87;
@@ -112,28 +72,11 @@ function Player()
     player.distance = 0;
 
     player.sprites = [];
-    player.sprites.level = new Image();
-    player.sprites.bankr = new Image();
-    player.sprites.bankl = new Image();
-    player.sprites.level.src = "imgs/reisenlevel.png";
-    player.sprites.bankr.src = "imgs/reisenbankr.png";
-    player.sprites.bankl.src = "imgs/reisenbankl.png";
+    player.sprites.level = spr.imgs.reisen.level;
+    player.sprites.bankr = spr.imgs.reisen.bankr;
+    player.sprites.bankl = spr.imgs.reisen.bankl;
+
     player.img = player.sprites.level;
-
-    player.sprites.level.onload = function() {
-        player.sprites.level.ready = true;
-        player.rdy = allspritesready(player.sprites);
-    };
-    player.sprites.bankl.onload = function() {
-        player.sprites.bankl.ready = true;
-        player.rdy = allspritesready(player.sprites);
-    };
-    player.sprites.bankr.onload = function() {
-        player.sprites.bankr.ready = true;
-        player.rdy = allspritesready(player.sprites);
-    };
-
-
 
     player.move = function (direc, modifier) {
         switch (direc) {
@@ -154,22 +97,15 @@ function Player()
         }
     };
 
-    player.fire = function () {
-        var bullet = new PlayerBullet(player.x, player.y, player.strength);
+    player.fire = function (spspr) {
+        console.log("BANG");
+        var bullet = new PlayerBullet(spspr, player.x, player.y, player.strength);
         return bullet;
     };
 
     player.level = function () {
         player.img = player.sprites.level;
     };
-    player.getheight = function () {
-        return player.img.height;
-    };
-    player.getwidth = function () {
-        return player.img.width;
-    };
-
-    console.log("reisen height: " + player.getheight() + " | width: " + player.getwidth());
 
     return player;
 }
