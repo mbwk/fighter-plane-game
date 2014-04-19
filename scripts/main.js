@@ -17,22 +17,7 @@ function main()
         enemies.push(new EnemyKMT(300, 100));
     };
     */
-
-    var checkbounds = function (attacker, victim) {
-        var inleftbound = false, inrightbound = false,
-            inbotbound = false, intopbound = false;
-
-        inleftbound = attacker.exright() > victim.exleft();
-        inrightbound = attacker.exleft() < victim.exright();
-        intopbound = attacker.upper() > victim.lower();
-        inbotbound = attacker.lower() < victim.upper();
-
-        if ( (inbotbound && (inleftbound || inrightbound)) || (intopbound && (inleftbound || inrightbound)) ) {
-                    return true;
-        }
-        return false;
-    };
-
+    
     var gameloop = function () {
         var now = Date.now();
         var delta = now - then;

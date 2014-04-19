@@ -35,7 +35,7 @@ function PlayerBullet(spr, playerx, playery, playerdmg)
 
     pbullet.x = playerx;
     pbullet.y = playery;
-    pbullet.speed = 512;
+    pbullet.speed = 1024;
     pbullet.height = 32;
     pbullet.width = 16;
     pbullet.damage = playerdmg;
@@ -68,6 +68,9 @@ function Player(spr, newx, newy)
     player.hitpoints = player.maxhp;
     player.damage = 2;
 
+    player.lastfired = 0;
+    player.firedelay = 250;
+
     player.kills = 0;
     player.distance = 0;
 
@@ -97,10 +100,38 @@ function Player(spr, newx, newy)
         }
     };
 
+    player.moveto = function (to_x, to_y, modifier) {
+        var cvs = document.getElementById("gamecanv");
+        var tolerance = 15; // tolerance, prevents "jittering"
+        if (player.x < (to_x - tolerance) && player.x < cvs.width - 340 ) {
+            player.move("right", modifier);
+        }
+        if (player.x > (to_x + tolerance) && player.x > 60 ) {
+            player.move("left", modifier);
+        }
+        if (player.y < (to_y - tolerance) && player.y < cvs.height - 60 ) {
+            player.move("down", modifier);
+        }
+        if (player.y > (to_y + tolerance) && player.y > 60 ) {
+            player.move("up", modifier);
+        }
+    };
+
+    player.firesound = new Howl({ urls: ['sounds/shoot.wav']});
+
     player.fire = function (spspr) {
-        console.log("BANG");
+        player.firesound.play();
+        player.lastfired = Date.now();
         var bullet = new PlayerBullet(spspr, player.x, player.y, player.strength);
         return bullet;
+    };
+
+    player.offcd = function () {
+        var checktime = Date.now();
+        if ( (checktime - player.lastfired) > player.firedelay ) {
+            return true;
+        }
+        return false;
     };
 
     player.level = function () {
@@ -111,7 +142,7 @@ function Player(spr, newx, newy)
 }
 
 /* enemy class, inherited from */
-function Enemy()
+function Enemy(spr)
 {
     var enemy = new GameEntity();
 
@@ -121,10 +152,7 @@ function Enemy()
     enemy.hitpoints = 2;
     enemy.damage = 1;
 
-    //enemy.img = new Image();
-    enemy.rdy = false;
-    enemy.img = spritessy.imgs.enemy;
-    enemy.rdy = true;
+    enemy.img = spr.imgs.enemy;
 
     enemy.move = function (modifier) {
         enemy.y += (enemy.speed) * modifier;
@@ -134,17 +162,14 @@ function Enemy()
 }
 
 /* kuomintang plane. most common enemy */
-function EnemyKMT(newx, newy)
+function EnemyKMT(spr, newx, newy)
 {
-    var kmt = new Enemy();
+    var kmt = new Enemy(spr);
 
     kmt.x = newx;
     kmt.y = newy;
 
-    //kmt.img = new Image();
-    kmt.rdy = false;
-    kmt.img = spritessy.imgs.enemykmt;
-    kmt.rdy = true;
+    kmt.img = spr.imgs.enemykmt;
 
     kmt.move = function (modifier) {
         kmt.y += (kmt.speed) * modifier;

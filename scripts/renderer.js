@@ -69,19 +69,18 @@ function Renderer()
             rdr.scroller = rdr.origin;
         }
 
-        // later, check if player is alive first
-        rdr.draw_img(player);
-
         var i;
-        for (i = enemies.length - 1; i >= 0; --i) {
-            rdr.draw_img(enemies[i]);
-        }
         for (i = pbullets.length - 1; i >= 0; --i) {
             rdr.draw_img(pbullets[i]);
         }
         for (i = ebullets.length - 1; i >= 0; --i) {
             rdr.draw_img(ebullets[i]);
         }
+        for (i = enemies.length - 1; i >= 0; --i) {
+            rdr.draw_img(enemies[i]);
+        }
+
+        rdr.draw_img(player);
 
         rdr.writestats(player);
 

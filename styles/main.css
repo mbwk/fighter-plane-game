@@ -1,6 +1,4 @@
 body {
-    margin-left: 280px;
-    margin-right: 280px;
 }
 
 header {
@@ -8,6 +6,8 @@ header {
 }
 
 nav {
+    margin-left: 60px;
+    position: absolute;
     text-align: center;
 }
 
@@ -17,15 +17,17 @@ nav ul {
 }
 
 nav ul li {
-    display: inline;
-    padding 0 lem 0 0;
+    /* display: inline; */
+    /* padding 0 lem 0 0; */
 }
 
 section {
+    margin-left: 280px;
+    margin-right: 280px;
 }
 
 canvas {
-    cursor: auto;
+    cursor: crosshair;
 }
 
 footer {

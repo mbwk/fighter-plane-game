@@ -10,6 +10,7 @@ function GameState(spr)
     gmst.gameover = false;
     gmst.gamemenu = false;
     gmst.gamepaused = false;
+    gmst.stage = 0;
 
     // game entities
     gmst.player = new Player(spr, 255, 450);
@@ -17,10 +18,29 @@ function GameState(spr)
     gmst.playerbullets = new Array();
     gmst.enemybullets = new Array();
 
+    gmst.spawnenemies = function () {
+        var stagelength = 800;
+        ++gmst.stage;
+        var i = 0;
+        for (i = 0; i < (gmst.stage + 10) && i < 20; ++i) {
+            var x = Math.floor( Math.random() * ( cvs.width - 360 + 1 ));
+            var y = Math.floor( Math.random() * ( 50 - stagelength + 1 ) - 1200 );
+            gmst.enemieslist.push(new EnemyKMT(spr, x, y));
+        }
+        console.log("spawned " + i + " kuomintang fighters...");
+    }
+
     // handle mouse + keyboard events
     gmst.keysdown = {};
-    gmst.mousemove = { x: 0, y: 0 };
-    gmst.mouseclick = { x: 0, y: 0 };
+    gmst.mousepos = { x: 0, y: 0 };
+    gmst.mousemovement = false;
+    gmst.mouseheld = false;
+
+    gmst.attemptshot = function () {
+        if (gmst.player.offcd()) {
+            gmst.playerbullets.push( gmst.player.fire(spr) );
+        }
+    }
 
     addEventListener("keydown", function (e) {
         gmst.keysdown[e.keyCode] = true;
@@ -30,14 +50,21 @@ function GameState(spr)
     }, false);
     addEventListener("mousemove", function (e) {
         // update globally stored mouse position
-        gmst.mousemove = get_mouse_xy(e);
+        gmst.mousepos = get_mouse_xy(e);
+        gmst.mousemovement = true;
     }, false);
+    addEventListener("mousedown", function (e) {
+        gmst.mouseheld = true;
+    }, false);
+    addEventListener("mouseup", function (e) {
+        gmst.mouseheld = false;
+    }, false)
 
     gmst.moveobjects = function (modifier) {
         var i;
         for (i = gmst.enemieslist.length - 1; i >= 0; --i) {
             //enemy.move(modifier);
-            gmst.enemieslist[i].y += enemy.speed * modifier;
+            gmst.enemieslist[i].move(modifier);
         }
         for (i = gmst.playerbullets.length - 1; i >= 0; --i) {
             gmst.playerbullets[i].move(modifier);
@@ -45,6 +72,21 @@ function GameState(spr)
         for (i = gmst.enemybullets.length - 1; i >= 0; --i) {
             gmst.enemybullets[i].move(modifier);
         }
+    };
+
+    gmst.checkbounds = function (attacker, victim) {
+        var inleftbound = false, inrightbound = false,
+            inbotbound = false, intopbound = false;
+
+        inleftbound = attacker.exright() > victim.exleft();
+        inrightbound = attacker.exleft() < victim.exright();
+        intopbound = attacker.upper() > victim.lower();
+        inbotbound = attacker.lower() < victim.upper();
+
+        if ( (inbotbound && (inleftbound || inrightbound)) || (intopbound && (inleftbound || inrightbound)) ) {
+                    return true;
+        }
+        return false;
     };
 
     gmst.checkcollisions = function () {
@@ -81,32 +123,43 @@ function GameState(spr)
         if (38 in gmst.keysdown && gmst.player.upper() > 36 ) { // up
             // hero.y -= (hero.speed * 0.75) * modifier;
             gmst.player.move("up", modifier);
+            gmst.mousemovement = false;
         }
         if (40 in gmst.keysdown && gmst.player.lower() < cvs.height - 16 ) { // down
             // hero.y += (hero.speed * 1.25) * modifier;
             gmst.player.move("down", modifier);
+            gmst.mousemovement = false;
         }
         
-        // left or right
+        // arrow key movement
         if (37 in gmst.keysdown && gmst.player.exleft() > 16 ) { // left
             // hero.x -= hero.speed * modifier;
             gmst.player.move("left", modifier);
-        } else if (39 in gmst.keysdown && gmst.player.exright() < cvs.width - 16 ) { // right
+            gmst.mousemovement = false;
+        } else if (39 in gmst.keysdown && gmst.player.exright() < cvs.width - 300 ) { // right
             // hero.x += hero.speed * modifier;
             gmst.player.move("right", modifier);
+            gmst.mousemovement = false;
         } else {
             gmst.player.level();
         }
 
+        if (gmst.mousemovement) {
+            gmst.player.moveto(gmst.mousepos.x, gmst.mousepos.y, modifier);
+        }
+
         // fire
-        if (32 in gmst.keysdown) {
-            console.log("bang");
-            gmst.playerbullets.push( gmst.player.fire(spr) );
+        if (32 in gmst.keysdown || gmst.mouseheld) {
+            gmst.attemptshot();
         }
 
         // bring world to life
         //gmst.checkcollisions();
         gmst.moveobjects(modifier);
+
+        if (gmst.enemieslist.length < 1) {
+            gmst.spawnenemies();
+        }
 
     };
 
