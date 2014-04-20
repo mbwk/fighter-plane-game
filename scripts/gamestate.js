@@ -1,22 +1,24 @@
 // everything to do with updating and managing the game state
 
-function GameState(spr)
+function GameState(spr, snd)
 {
     var cvs = document.getElementById("gamecanv");
 
     var gmst = {};
 
-    // game states
-    gmst.gameover = false;
-    gmst.gamemenu = false;
-    gmst.gamepaused = false;
-    gmst.stage = 0;
+    gmst.reset = function () {
+        // game states
+        gmst.gameover = false;
+        gmst.gamemenu = false;
+        gmst.gamepaused = false;
+        gmst.stage = 0;
 
-    // game entities
-    gmst.player = new Player(spr, 255, 450);
-    gmst.enemieslist = new Array();
-    gmst.playerbullets = new Array();
-    gmst.enemybullets = new Array();
+        // game entities
+        gmst.player = new Player(spr, snd, 255, 450);
+        gmst.enemieslist = new Array();
+        gmst.playerbullets = new Array();
+        gmst.enemybullets = new Array();
+    };
 
     gmst.spawnenemies = function () {
         var stagelength = 800;
@@ -24,10 +26,16 @@ function GameState(spr)
         var i = 0;
         for (i = 0; i < (gmst.stage + 10) && i < 20; ++i) {
             var x = Math.floor( Math.random() * ( cvs.width - 360 + 1 ));
-            var y = Math.floor( Math.random() * ( 50 - stagelength + 1 ) - 1200 );
-            gmst.enemieslist.push(new EnemyKMT(spr, x, y));
+            var y = Math.floor( Math.random() * ( -1 * 1200) );
+            gmst.enemieslist.push(new EnemyKMT(spr, snd, x, y));
         }
         console.log("spawned " + i + " kuomintang fighters...");
+
+        for (i = 2; i < (gmst.stage + 4) && i < 16; ++i) {
+            var x = Math.random() * ( cvs.width - 360 + 1);
+            var y = Math.random() * (-1 * 1200);
+            gmst.enemieslist.push(new EnemyUSN(spr, snd, x, y));
+        }
     }
 
     // handle mouse + keyboard events
@@ -60,6 +68,16 @@ function GameState(spr)
         gmst.mouseheld = false;
     }, false)
 
+    gmst.removedead = function (modifier) {
+        var i = 0;
+        for (i = gmst.enemieslist.length - 1; i >= 0; --i) {
+            if (gmst.enemieslist[i].hitpoints < 1) {
+                gmst.enemieslist.splice(i, 1);
+                ++gmst.player.kills;
+            }
+        }
+    };
+
     gmst.moveobjects = function (modifier) {
         var i;
         for (i = gmst.enemieslist.length - 1; i >= 0; --i) {
@@ -78,11 +96,6 @@ function GameState(spr)
         var inleftbound = false, inrightbound = false,
             inbotbound = false, intopbound = false;
 
-        // inleftbound = attacker.x > victim.exleft();
-        // inrightbound = attacker.x < victim.exright();
-        // intopbound = attacker.y < victim.lower();
-        // inbotbound = attacker.y > victim.upper();
-
         inleftbound = attacker.exright() >= victim.exleft();
         inrightbound = attacker.exleft() <= victim.exright();
         intopbound = attacker.upper() + 20 <= victim.lower();
@@ -94,6 +107,7 @@ function GameState(spr)
     gmst.checkcollisions = function () {
         // has a bullet gone out of bounds?
         var i;
+        var j;
         for (i = gmst.playerbullets.length - 1; i >= 0; --i) {
             if (gmst.playerbullets[i].y < 0) {
                 gmst.playerbullets.splice(i, 1);
@@ -117,6 +131,7 @@ function GameState(spr)
             if ( gmst.checkbounds(gmst.enemieslist[i], gmst.player) ) {
                 ++gmst.player.kills;
                 gmst.player.hitby(gmst.enemieslist[i]);
+                gmst.enemieslist[i].explode();
                 gmst.enemieslist.splice(i, 1);
             }
         }
@@ -125,6 +140,17 @@ function GameState(spr)
         for (i = gmst.enemybullets.length - 1; i >= 0; --i) {
             if ( gmst.checkbounds(gmst.enemybullets[i], player) ) {
                 gmst.player.hitby(gmst.enemybullets[i]);
+            }
+        }
+
+        // has one our player's bullets hit an enemy?
+        for (i = gmst.playerbullets.length - 1; i >= 0; --i) {
+            for (j = gmst.enemieslist.length - 1; j >= 0; --j) {
+                if ( gmst.checkbounds(gmst.playerbullets[i], gmst.enemieslist[j]) ) {
+                    gmst.enemieslist[j].hitby( gmst.playerbullets[i] );
+                    gmst.playerbullets.splice( i, 1 );
+                    break;
+                }
             }
         }
     };
@@ -182,6 +208,7 @@ function GameState(spr)
         }
 
         // bring world to life
+        gmst.removedead();
         gmst.checkcollisions();
         gmst.moveobjects(modifier);
 

@@ -54,7 +54,7 @@ function EnemyBullet(spr, enemyx, enemyy, enemydmg)
 {
 }
 
-function Player(spr, newx, newy)
+function Player(spr, snd, newx, newy)
 {
     // var player = {};
     var player = new GameEntity();
@@ -66,10 +66,10 @@ function Player(spr, newx, newy)
     player.width = 87;
     player.maxhp = 20;
     player.hitpoints = player.maxhp;
-    player.damage = 2;
+    player.damage = 3;
 
     player.lastfired = 0;
-    player.firedelay = 250;
+    player.firedelay = 200;
 
     player.kills = 0;
     player.distance = 0;
@@ -117,12 +117,13 @@ function Player(spr, newx, newy)
         }
     };
 
-    player.firesound = new Howl({ urls: ['sounds/shoot.wav']});
+    player.shootsounds = snd.shoot;
 
     player.fire = function (spspr) {
-        player.firesound.play();
+        var selection = Math.floor(Math.random() * player.shootsounds.length);
+        player.shootsounds[selection].play();
         player.lastfired = Date.now();
-        var bullet = new PlayerBullet(spspr, player.x, player.y, player.strength);
+        var bullet = new PlayerBullet(spspr, player.x, player.y, player.damage);
         return bullet;
     };
 
@@ -138,10 +139,11 @@ function Player(spr, newx, newy)
         player.img = player.sprites.level;
     };
 
-    player.hitsound = new Howl({ urls: ['sounds/hit.wav']});
+    player.hitsounds = snd.hit;
 
     player.hitby = function (attacker) {
-        player.hitsound.play();
+        var selection = Math.floor(Math.random() * player.hitsounds.length);
+        player.hitsounds[selection].play();
         player.hitpoints -= attacker.damage;
     };
 
@@ -149,14 +151,15 @@ function Player(spr, newx, newy)
 }
 
 /* enemy class, inherited from */
-function Enemy(spr)
+function Enemy(spr, snd)
 {
     var enemy = new GameEntity();
 
     enemy.speed = 128;
+    enemy.speed = Math.floor( Math.random() * ( 256 - 168 ) + 168 );
     enemy.height = 68;
     enemy.width = 87;
-    enemy.hitpoints = 2;
+    enemy.hitpoints = 8;
     enemy.damage = 1;
 
     enemy.img = spr.imgs.enemy;
@@ -165,24 +168,93 @@ function Enemy(spr)
         enemy.y += (enemy.speed) * modifier;
     };
 
+    enemy.shootsounds = snd.shoot;
+    enemy.hitsounds = snd.hit;
+    enemy.explodesounds = snd.explode;
+    enemy.lastfired = 0;
+    enemy.firedelay = 2000;
+
+    enemy.offcd = function () {
+        var checktime = Date.now();
+        if ( (checktime - player.lastfired) > player.firedelay ) {
+            return true;
+        }
+        return false;
+    };
+
+    enemy.specialaction = function (gs, modifier) {
+        // this member function is meant to be overridden by subclasses of enemies
+        // to provide variation in enemy behaviour
+        
+
+
+        // the return value of this function must be a bool
+        // it is used to decided whether to call the fire function
+        // return false to never fire, else plug in the offcd() function
+        return enemy.offcd();
+    };
+
+    enemy.fire = function (spspr) {
+        var selection = Math.floor(Math.random() * player.shootsounds.length);
+        enemy.shootsounds[selection].play();
+        enemy.lastfired = Date.now();
+        var bullet = new EnemyBullet(spspr, enemy.x, enemy.y, enemy.damage);
+    };
+
+    enemy.explode = function () {
+        var selection = Math.floor(Math.random() * enemy.explodesounds.length);
+        enemy.explodesounds[selection].play();
+    };
+
+    enemy.hitby = function (attacker) {
+        var selection = Math.floor(Math.random() * enemy.hitsounds.length);
+        enemy.hitsounds[selection].play();
+        enemy.hitpoints -= attacker.damage;
+        if (enemy.hitpoints < 1) {
+            enemy.explode();
+        }
+    };
+
+
+
     return enemy;
 }
 
 /* kuomintang plane. most common enemy */
-function EnemyKMT(spr, newx, newy)
+function EnemyKMT(spr, snd, newx, newy)
 {
-    var kmt = new Enemy(spr);
+    var kmt = new Enemy(spr, snd);
 
     kmt.x = newx;
     kmt.y = newy;
+    kmt.damage = 2;
 
     kmt.img = spr.imgs.enemykmt;
+/*
+    kmt.specialaction = function (gs, modifier) {
+    };
+*/
+    return kmt;
+}
 
-    kmt.move = function (modifier) {
-        kmt.y += (kmt.speed) * modifier;
+function EnemyUSN(spr, snd, newx, newy)
+{
+    var usn = new Enemy(spr, snd);
+
+    usn.x = newx;
+    usn.y = newy;
+
+    usn.sprites = {};
+
+    usn.sprites.level = spr.imgs.enemyusn.level;
+    usn.sprites.bankl = spr.imgs.enemyusn.bankl;
+    usn.sprites.bankr = spr.imgs.enemyusn.bankr;
+
+    usn.img = usn.sprites.level;
+
+    usn.specialaction = function (gs, modifier) {
     };
 
-    /* sprite */
-    return kmt;
+    return usn;
 }
 

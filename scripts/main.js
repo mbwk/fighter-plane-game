@@ -2,21 +2,12 @@ function main()
 {
     /* init imgs */
     var spr = new SpritesLoader();
-    var gs = new GameState(spr);
-    var myRenderer = new Renderer();
+    var snd = new SoundsLoader();
 
-    var stage = 0;
-    /*
-    var newstage = function () {
-        ++stage;
-        for (var i = 0; i < (stage + 10) && i < 20; ++i) {
-            var x = Math.floor( Math.random() * ( 512 - 0 + 1 ));
-            var y = Math.floor( Math.random() * ( 0 - 1200 + 1 ) - 1200 );
-            enemies.push(new EnemyKMT(x, y));
-        }
-        enemies.push(new EnemyKMT(300, 100));
-    };
-    */
+    var gs = new GameState(spr, snd);
+    gs.reset();
+
+    var myRenderer = new Renderer();
 
     var gameloop = function () {
         var now = Date.now();
