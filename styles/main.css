@@ -23,7 +23,7 @@ nav ul li {
 }
 
 section {
-    /* position: absolute; */
+    position: absolute;
     margin-left: 380px;
     margin-right: 180px;
 }
