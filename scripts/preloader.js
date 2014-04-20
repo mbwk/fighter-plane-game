@@ -15,10 +15,12 @@ function SpritesLoader()
     spr.imgs.bullet = new Image();
     spr.imgs.enemy = new Image();
     spr.imgs.enemykmt = new Image();
+    spr.imgs.seatile = new Image();
 
     spr.imgs.bullet.rdy = false;
     spr.imgs.enemy.rdy = false;
     spr.imgs.enemykmt.rdy = false;
+    spr.imgs.seatile.rdy = false;
 
     spr.imgs.reisen.level.src = "imgs/reisenlevel.png";
     spr.imgs.reisen.bankl.src = "imgs/reisenbankl.png";
@@ -31,6 +33,7 @@ function SpritesLoader()
     spr.imgs.bullet.src = "imgs/bullet.png";
     spr.imgs.enemy.src = "imgs/enemydefault.png";
     spr.imgs.enemykmt.src = "imgs/enemykmt.png";
+    spr.imgs.seatile.src = "imgs/seatile.png";
 
     spr.imgs.reisen.level.onload = function () {
         spr.imgs.reisen.level.rdy = true;
@@ -60,6 +63,9 @@ function SpritesLoader()
     };
     spr.imgs.enemykmt.onload = function () {
         spr.imgs.enemykmt.rdy = true;
+    };
+    spr.imgs.seatile.onload = function () {
+        spr.imgs.seatile.rdy = true;
     };
 
     spr.allReady = function () {

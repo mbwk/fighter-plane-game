@@ -1,6 +1,6 @@
 // everything to do with the render cycle
 
-function Renderer()
+function Renderer(spr)
 {
     var rdr = {};
 
@@ -8,20 +8,28 @@ function Renderer()
     rdr.ctx = rdr.cvs.getContext("2d");
 
     rdr.gamewidth = 512;
-    rdr.hudwidth = 275
+    rdr.hudwidth = 275;
 
     // background image
-    rdr.bgRdy = false;
-    rdr.bgImg = new Image();
-    rdr.bgImg.onload = function () {
-        bgRdy = true;
-    };
-    rdr.bgImg.src = "imgs/testbg.png";
 
-    rdr.bglength = 1033;
-    rdr.origin = (-1 * rdr.bglength) + rdr.cvs.height;
+    rdr.bgimg = spr.imgs.seatile;
+    rdr.bgimg.width = 66;
+    rdr.bgimg.height = 65;
+
+    rdr.origin = -1 * rdr.bgimg.height;
     rdr.scroller = rdr.origin;
     rdr.delay = 0;
+
+    rdr.draw_bg = function ( scroller ) {
+        var numvtiles = Math.floor( (rdr.cvs.height / rdr.bgimg.height) + 2);
+        var numhtiles = Math.floor( (rdr.gamewidth / rdr.bgimg.width) + 1);
+        var i, j;
+        for (j = -1; j < numvtiles; ++j) {
+            for (i = -1; i < numhtiles; ++i) {
+                rdr.ctx.drawImage( rdr.bgimg, i * rdr.bgimg.width, (j * rdr.bgimg.height) + scroller );
+            }
+        }
+    };
 
     rdr.draw_img = function (object) {
         rdr.ctx.drawImage( object.img, object.x - (object.width / 2), object.y - (object.height / 2) );
@@ -73,7 +81,7 @@ function Renderer()
     };
 
     rdr.render_gamestate = function (gmst) {
-        rdr.ctx.drawImage(rdr.bgImg, 0, rdr.scroller);
+        rdr.draw_bg( rdr.scroller );
         rdr.scroller += 2;
 
         if (rdr.scroller > 0) {

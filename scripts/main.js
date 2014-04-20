@@ -7,7 +7,7 @@ function main()
     var gs = new GameState(spr, snd);
     gs.reset();
 
-    var myRenderer = new Renderer();
+    var myRenderer = new Renderer(spr);
 
     var gameloop = function () {
         var now = Date.now();
