@@ -52,6 +52,23 @@ function PlayerBullet(spr, playerx, playery, playerdmg)
 
 function EnemyBullet(spr, enemyx, enemyy, enemydmg)
 {
+    var ebullet = new GameEntity();
+
+    ebullet.x = enemyx;
+    ebullet.y = enemyy;
+    ebullet.speed = 512;
+    ebullet.height = 32;
+    ebullet.width = 12;
+    ebullet.damage = enemydmg;
+
+    ebullet.img = spr.imgs.bullet;
+    ebullet.rdy = spr.imgs.bullet.rdy;
+
+    ebullet.move = function (modifier) {
+        ebullet.y += (ebullet.speed * modifier);
+    };
+
+    return ebullet;
 }
 
 function Player(spr, snd, newx, newy)
@@ -176,7 +193,7 @@ function Enemy(spr, snd)
 
     enemy.offcd = function () {
         var checktime = Date.now();
-        if ( (checktime - player.lastfired) > player.firedelay ) {
+        if ( enemy.y > 0 && (checktime - enemy.lastfired) > enemy.firedelay ) {
             return true;
         }
         return false;
@@ -195,10 +212,11 @@ function Enemy(spr, snd)
     };
 
     enemy.fire = function (spspr) {
-        var selection = Math.floor(Math.random() * player.shootsounds.length);
+        var selection = Math.floor(Math.random() * enemy.shootsounds.length);
         enemy.shootsounds[selection].play();
         enemy.lastfired = Date.now();
         var bullet = new EnemyBullet(spspr, enemy.x, enemy.y, enemy.damage);
+        return bullet;
     };
 
     enemy.explode = function () {
@@ -230,10 +248,16 @@ function EnemyKMT(spr, snd, newx, newy)
     kmt.damage = 2;
 
     kmt.img = spr.imgs.enemykmt;
-/*
+
     kmt.specialaction = function (gs, modifier) {
+        if (kmt.y + 300 > gs.player.y && kmt.y < gs.player.y ) {
+            if (kmt.x + 40 > gs.player.x && kmt.x - 40 < gs.player.x) {
+                return kmt.offcd();
+            }
+        }
+        return false;
     };
-*/
+
     return kmt;
 }
 
@@ -243,6 +267,7 @@ function EnemyUSN(spr, snd, newx, newy)
 
     usn.x = newx;
     usn.y = newy;
+    usn.damage = 3;
 
     usn.sprites = {};
 
@@ -253,6 +278,7 @@ function EnemyUSN(spr, snd, newx, newy)
     usn.img = usn.sprites.level;
 
     usn.specialaction = function (gs, modifier) {
+        return false;
     };
 
     return usn;

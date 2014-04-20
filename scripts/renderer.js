@@ -27,6 +27,14 @@ function Renderer()
         rdr.ctx.drawImage( object.img, object.x - (object.width / 2), object.y - (object.height / 2) );
     };
 
+    rdr.draw_rotated_img = function (object) {
+        rdr.ctx.save();
+        rdr.ctx.translate(object.x, object.y);
+        rdr.ctx.rotate(Math.PI);
+        rdr.ctx.drawImage(object.img, (-1 * object.width), (-1 * object.height) );
+        rdr.ctx.restore();
+    };
+
     rdr.writestats = function (player, gmstage) {
         rdr.ctx.fillStyle = "#995500";
         rdr.ctx.fillRect(rdr.gamewidth, 0, rdr.hudwidth, rdr.cvs.height);
@@ -77,7 +85,7 @@ function Renderer()
             rdr.draw_img(gmst.playerbullets[i]);
         }
         for (i = gmst.enemybullets.length - 1; i >= 0; --i) {
-            rdr.draw_img(gmst.enemybullets[i]);
+            rdr.draw_rotated_img(gmst.enemybullets[i]);
         }
         for (i = gmst.enemieslist.length - 1; i >= 0; --i) {
             rdr.draw_img(gmst.enemieslist[i]);
@@ -96,11 +104,33 @@ function Renderer()
     };
 
     rdr.render_gameover = function () {
-        
+        var xmid = rdr.cvs.width / 2;
+        var ymid = rdr.cvs.height / 2;
+        rdr.ctx.save();
+        rdr.ctx.strokeRect( xmid - 140, ymid - 60, 280, 120);
+
+        rdr.ctx.fillStyle = "rgb(100, 100, 100)";
+        rdr.ctx.fillRect( xmid - 140, ymid - 60, 280, 120);
+
+        rdr.ctx.fillStyle = "black";
+        rdr.ctx.fillText("Game over!", xmid - 60, ymid - 15 );
+        rdr.ctx.fillText("R to reset", xmid - 55, ymid + 15);
+        rdr.ctx.restore();
     };
 
     rdr.render_pause = function () {
+        var xmid = rdr.cvs.width / 2;
+        var ymid = rdr.cvs.height / 2;
+        rdr.ctx.save();
+        rdr.ctx.strokeRect( xmid - 140, ymid - 60, 280, 120);
 
+        rdr.ctx.fillStyle = "rgb(100, 100, 100)";
+        rdr.ctx.fillRect( xmid - 140, ymid - 60, 280, 120);
+
+        rdr.ctx.fillStyle = "black";
+        rdr.ctx.fillText("Paused", xmid - 40, ymid - 15 );
+        rdr.ctx.fillText("U to unpause", xmid - 70, ymid + 15);
+        rdr.ctx.restore();
     };
 
     rdr.render = function(gmst) {
@@ -108,7 +138,7 @@ function Renderer()
             rdr.render_gameover();
         } else if (gmst.gamemenu) {
             rdr.render_menustate();
-        } else if (gmst.gamepause) {
+        } else if (gmst.gamepaused) {
             rdr.render_pause();
         } else {
             // game state

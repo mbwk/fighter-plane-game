@@ -21,19 +21,24 @@ function GameState(spr, snd)
     };
 
     gmst.spawnenemies = function () {
-        var stagelength = 800;
+        var stagelength = 2000;
         ++gmst.stage;
         var i = 0;
-        for (i = 0; i < (gmst.stage + 10) && i < 20; ++i) {
-            var x = Math.floor( Math.random() * ( cvs.width - 360 + 1 ));
-            var y = Math.floor( Math.random() * ( -1 * 1200) );
+        for (i = 0; i < (gmst.stage + 10) && i < 24; ++i) {
+            var x = Math.random() * ( (cvs.width - 360) + 40 );
+            var y = Math.random() * ( -1 * stagelength);
             gmst.enemieslist.push(new EnemyKMT(spr, snd, x, y));
         }
-        console.log("spawned " + i + " kuomintang fighters...");
 
-        for (i = 2; i < (gmst.stage + 4) && i < 16; ++i) {
-            var x = Math.random() * ( cvs.width - 360 + 1);
-            var y = Math.random() * (-1 * 1200);
+        if (gmst.stage < 3) {
+            return;
+        }
+
+        /* from waves 3 and forward, grumman joins the enemy waves */
+
+        for (i = 0; i < (gmst.stage + 2) && i < 16; ++i) {
+            var x = Math.random() * ( (cvs.width - 360) + 40);
+            var y = Math.random() * (-1 * stagelength);
             gmst.enemieslist.push(new EnemyUSN(spr, snd, x, y));
         }
     }
@@ -78,10 +83,18 @@ function GameState(spr, snd)
         }
     };
 
+    gmst.enemydecisions = function (modifier) {
+        var i = 0;
+        for (i = gmst.enemieslist.length - 1; i >= 0; --i) {
+            if ( gmst.enemieslist[i].specialaction(gmst, modifier) ) {
+                gmst.enemybullets.push( gmst.enemieslist[i].fire(spr) );
+            }
+        }
+    };
+
     gmst.moveobjects = function (modifier) {
         var i;
         for (i = gmst.enemieslist.length - 1; i >= 0; --i) {
-            //enemy.move(modifier);
             gmst.enemieslist[i].move(modifier);
         }
         for (i = gmst.playerbullets.length - 1; i >= 0; --i) {
@@ -138,8 +151,10 @@ function GameState(spr, snd)
 
         // has an enemy bullet hit our player?
         for (i = gmst.enemybullets.length - 1; i >= 0; --i) {
-            if ( gmst.checkbounds(gmst.enemybullets[i], player) ) {
+            if ( gmst.checkbounds(gmst.enemybullets[i], gmst.player) ) {
                 gmst.player.hitby(gmst.enemybullets[i]);
+                gmst.enemybullets.splice( i, 1 );
+                break;
             }
         }
 
@@ -158,6 +173,9 @@ function GameState(spr, snd)
     gmst.update = function (modifier) {
 
         if (gmst.gameover) {
+            if (82 in gmst.keysdown) {
+                gmst.reset();
+            }
             return;
         }
         if (gmst.gamemenu) {
@@ -170,23 +188,23 @@ function GameState(spr, snd)
             return;
         }
 
-        if (38 in gmst.keysdown && gmst.player.upper() > 36 ) { // up
+        if (87 in gmst.keysdown && gmst.player.upper() > 36 ) { // up
             // hero.y -= (hero.speed * 0.75) * modifier;
             gmst.player.move("up", modifier);
             gmst.mousemovement = false;
         }
-        if (40 in gmst.keysdown && gmst.player.lower() < cvs.height - 16 ) { // down
+        if (83 in gmst.keysdown && gmst.player.lower() < cvs.height - 16 ) { // down
             // hero.y += (hero.speed * 1.25) * modifier;
             gmst.player.move("down", modifier);
             gmst.mousemovement = false;
         }
         
         // arrow key movement
-        if (37 in gmst.keysdown && gmst.player.exleft() > 16 ) { // left
+        if (65 in gmst.keysdown && gmst.player.exleft() > 16 ) { // left
             // hero.x -= hero.speed * modifier;
             gmst.player.move("left", modifier);
             gmst.mousemovement = false;
-        } else if (39 in gmst.keysdown && gmst.player.exright() < cvs.width - 300 ) { // right
+        } else if (68 in gmst.keysdown && gmst.player.exright() < cvs.width - 300 ) { // right
             // hero.x += hero.speed * modifier;
             gmst.player.move("right", modifier);
             gmst.mousemovement = false;
@@ -210,6 +228,7 @@ function GameState(spr, snd)
         // bring world to life
         gmst.removedead();
         gmst.checkcollisions();
+        gmst.enemydecisions(modifier);
         gmst.moveobjects(modifier);
 
         if (gmst.enemieslist.length < 1) {

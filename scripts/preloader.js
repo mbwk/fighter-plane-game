@@ -26,7 +26,7 @@ function SpritesLoader()
 
     spr.imgs.enemyusn.level.src = "imgs/enemyusnlevel.png";
     spr.imgs.enemyusn.bankl.src = "imgs/enemyusnbankl.png";
-    spr.imgs.enemyusn.bankr.src = "imgs/enemyusn.bankr.png";
+    spr.imgs.enemyusn.bankr.src = "imgs/enemyusnbankr.png";
 
     spr.imgs.bullet.src = "imgs/bullet.png";
     spr.imgs.enemy.src = "imgs/enemydefault.png";
