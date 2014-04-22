@@ -112,12 +112,13 @@ function Renderer(spr)
         rdr.ctx.fillRect( 0, 0, rdr.cvs.width, rdr.cvs.height );
         rdr.ctx.strokeRect( 0, 0, rdr.cvs.width, rdr.cvs.height );
 
-        var alignleft = rdr.cvs.width - 300;
+        var alignleft = 150;
+        rdr.ctx.font = "24px Helvetica";
         rdr.ctx.fillStyle = "black";
         rdr.ctx.fillText("Welcome to Showa 17!", alignleft, 200);
         rdr.ctx.fillText("Controls: ", alignleft, 250);
-        rdr.ctx.fillText("Movement - mouse, wasd keys", alignleft, 300);
-        rdr.ctx.fillText("Shoot - left mouse button, space bar", alignleft, 350);
+        rdr.ctx.fillText("Mouse, wasd keys - movement", alignleft, 300);
+        rdr.ctx.fillText("Left mouse button, space bar - shoot", alignleft, 350);
         rdr.ctx.fillText("[P]ause/[U]npause", alignleft, 400);
         rdr.ctx.fillText("[R]eset - also starts the game!", alignleft, 450);
         rdr.ctx.fillText("Try to survive 20 waves!", alignleft, 500);

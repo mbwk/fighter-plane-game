@@ -6,6 +6,7 @@ function main()
 
     var gs = new GameState(spr, snd);
     gs.reset();
+    gs.gamemenu = true;
 
     var myRenderer = new Renderer(spr);
 
