@@ -16,6 +16,7 @@ function SpritesLoader()
     spr.imgs.bullet = new Image();
     spr.imgs.enemy = new Image();
     spr.imgs.enemykmt = new Image();
+    spr.imgs.enemyp38 = new Image();
     spr.imgs.seatile = new Image();
     spr.imgs.explosions[0] = new Image();
     spr.imgs.explosions[1] = new Image();
@@ -45,6 +46,7 @@ function SpritesLoader()
     spr.imgs.enemykmt.src = "imgs/enemykmt.png";
     spr.imgs.seatile.src = "imgs/seatile.png";
     spr.imgs.healthpickup.src = "imgs/health.png";
+    spr.imgs.enemyp38.src = "imgs/enemyp38.png";
 
     spr.imgs.reisen.level.onload = function () {
         spr.imgs.reisen.level.rdy = true;
@@ -90,6 +92,9 @@ function SpritesLoader()
     };
     spr.imgs.healthpickup.onload = function () {
         spr.imgs.healthpickup.rdy = true;
+    };
+    spr.imgs.enemyp38.onload = function () {
+        spr.imgs.enemyp38.rdy = true;
     };
 
     spr.allReady = function () {

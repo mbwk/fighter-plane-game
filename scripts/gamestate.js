@@ -49,30 +49,40 @@ function GameState(spr, snd)
         var stagelength = 2000;
         ++gmst.stage;
         var i = 0;
-        for (i = 0; i < (gmst.stage + 10) && i < 24; ++i) {
-            var x = Math.random() * ( (cvs.width - 360) + 40 );
+        for (i = 0; i < (gmst.stage + 5) && i < 14; ++i) {
+            var x = ( Math.random() * (cvs.width - 450) ) + 100;
             var y = Math.random() * ( -1 * stagelength);
             gmst.enemieslist.push(new EnemyKMT(spr, snd, x, y));
         }
-
+        
         if (gmst.stage < 3) {
             return;
         }
 
-        /* from waves 3 and forward, grumman joins the enemy waves */
-
-        for (i = 0; i < (gmst.stage + 2) && i < 16; ++i) {
-            var x = Math.random() * ( (cvs.width - 360) + 40);
-            var y = Math.random() * (-1 * stagelength);
-            gmst.enemieslist.push(new EnemyUSN(spr, snd, x, y));
+        for (i = 0; i < (gmst.stage / 3); ++i) {
+            var x = ( Math.random() * (cvs.width - 450) ) + 100;
+            var y = (Math.random() * ( -1 * stagelength)) - 50;
+            gmst.enemieslist.push(new EnemyP38(spr, snd, x, y));
         }
 
         var pickupcount = 1;
         pickupcount = Math.floor(Math.random() * 3);
         for (i = 0; i < pickupcount; ++i) {
-            var x = Math.random() * ( (cvs.width - 460) + 100);
+            var x = ( Math.random() * (cvs.width - 450) ) + 100;
             var y = Math.random() * (-1 * stagelength);
             gmst.pickups.push( new HealthPickup(spr, x, y) );
+        }
+
+        if (gmst.stage < 6) {
+            return;
+        }
+
+        /* from waves 3 and forward, grumman joins the enemy waves */
+
+        for (i = 0; i < (gmst.stage + 2) && i < 18; ++i) {
+            var x = Math.random() * ( (cvs.width - 360) + 40);
+            var y = Math.random() * (-1 * stagelength);
+            gmst.enemieslist.push(new EnemyUSN(spr, snd, x, y));
         }
 
         if (gmst.stage > 20) {

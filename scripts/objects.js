@@ -244,7 +244,7 @@ function Enemy(spr, snd)
         // the return value of this function must be a bool
         // it is used to decided whether to call the fire function
         // return false to never fire, else plug in the offcd() function
-        return enemy.offcd();
+        return false;
     };
 
     enemy.fire = function (spspr) {
@@ -372,6 +372,21 @@ function EnemyUSN(spr, snd, newx, newy)
     };
 
     return usn;
+}
+
+function EnemyP38(spr, snd, newx, newy) {
+    var p38 = new Enemy(spr, snd);
+
+    p38.x = newx;
+    p38.y = newy;
+    p38.height = 120;
+    p38.width = 170;
+    p38.speed = 128;
+    p38.img = spr.imgs.enemyp38;
+    p38.hitpoints = 30;
+    p38.damage = 15;
+
+    return p38;
 }
 
 function HealthPickup(spr, newx, newy) {
