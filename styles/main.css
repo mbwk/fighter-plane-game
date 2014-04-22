@@ -1,31 +1,45 @@
 body {
+    background-color: #aaaaff;
 }
 
 header {
     text-align: center;
+    padding: 10px;
+    margin: 10px;
+    background-color: #bbb;
+    box-shadow: 0px 2px 2px #bbb;
 }
 
 nav {
     margin-left: 30px;
+    margin-top: 10px;
     width: 300px;
     position: absolute;
     text-align: center;
+    background-color: #CCFEBB;
+    box-shadow: 0px 2px 2px #bbb;
+    top: 0;
+    bottom: 0;
 }
 
 nav ul {
     margin: 0;
-    padding: 0;
+    padding: 20px;
+    list-style: none;
 }
 
 nav ul li {
     /* display: inline; */
-    /* padding 0 lem 0 0; */
+    padding: 5px;
 }
 
 section {
     position: absolute;
-    margin-left: 380px;
-    margin-right: 180px;
+    background-color: #fff;
+    left: 380px;
+    right: 140px;
+    padding: 20px;
+    box-shadow: 0px 2px 2px #bbb;
 }
 
 canvas {
