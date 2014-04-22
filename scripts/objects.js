@@ -1,3 +1,27 @@
+function Explosion(spr, newx, newy)
+{
+    var exp = {};
+    exp.x = newx;
+    exp.y = newy;
+    exp.height = 100;
+    exp.width = 100;
+
+    var rndsel = Math.floor( Math.random() * spr.imgs.explosions.length );
+    exp.img = spr.imgs.explosions[rndsel];
+
+    exp.cycle = 0;
+
+    exp.finished = function () {
+        ++exp.cycle;
+        if (exp.cycle <= 50) {
+            return false;
+        }
+        return true;
+    };
+
+    return exp;
+}
+
 function GameEntity()
 {
     var ent = {};
@@ -78,15 +102,15 @@ function Player(spr, snd, newx, newy)
 
     player.x = newx;
     player.y = newy;
-    player.speed = 256;
+    player.speed = 320;
     player.height = 68;
     player.width = 87;
-    player.maxhp = 20;
-    player.hitpoints = player.maxhp;
+    player.maxhp = 30;
+    player.hitpoints = 30;
     player.damage = 3;
 
     player.lastfired = 0;
-    player.firedelay = 200;
+    player.firedelay = 100;
 
     player.kills = 0;
     player.distance = 0;
@@ -162,6 +186,18 @@ function Player(spr, snd, newx, newy)
         var selection = Math.floor(Math.random() * player.hitsounds.length);
         player.hitsounds[selection].play();
         player.hitpoints -= attacker.damage;
+    };
+
+    player.heal = function (extra_amount) {
+        var healamt = 0;
+        healamt = Math.floor( (player.maxhp - player.hitpoints) / 4 );
+        healamt += extra_amount;
+        player.hitpoints += healamt;
+        if (player.hitpoints > player.maxhp) {
+            var tmp = player.maxhp;
+            ++player.maxhp;
+            player.hitpoints = tmp;
+        }
     };
 
     return player;
@@ -250,6 +286,9 @@ function EnemyKMT(spr, snd, newx, newy)
     kmt.img = spr.imgs.enemykmt;
 
     kmt.specialaction = function (gs, modifier) {
+        if (kmt.y + 20 > gs.player.y) {
+            kmt.speed += 10;
+        }
         if (kmt.y + 300 > gs.player.y && kmt.y < gs.player.y ) {
             if (kmt.x + 40 > gs.player.x && kmt.x - 40 < gs.player.x) {
                 return kmt.offcd();
@@ -267,7 +306,8 @@ function EnemyUSN(spr, snd, newx, newy)
 
     usn.x = newx;
     usn.y = newy;
-    usn.damage = 3;
+    usn.damage = 4;
+    usn.speed -= 50;
 
     usn.sprites = {};
 
@@ -275,12 +315,81 @@ function EnemyUSN(spr, snd, newx, newy)
     usn.sprites.bankl = spr.imgs.enemyusn.bankl;
     usn.sprites.bankr = spr.imgs.enemyusn.bankr;
 
+    usn.firedelay -= 300;
+
     usn.img = usn.sprites.level;
 
+    usn.level = function () {
+        usn.img = usn.sprites.level;
+    };
+
+    usn.bank = function (direc, modifier) {
+        switch (direc) {
+            case "left":
+                usn.x -= usn.speed * modifier;
+                usn.img = usn.sprites.bankl;
+                break;
+            case "right":
+                usn.x += usn.speed * modifier;
+                usn.img = usn.sprites.bankr;
+                break;
+        }
+    };
+
     usn.specialaction = function (gs, modifier) {
+        if (usn.y + 50 > gs.player.y) {
+            usn.speed += 5;
+            usn.bank("right", modifier);
+            return false;
+        }
+        if (usn.y < 0) {     // do nothing if you havent reached the battle
+            return false;
+        }
+        if (!usn.offcd()) {
+            if (usn.x + 40 >= gs.player.x && usn.x < gs.player.x && usn.x > 50 ) {
+                usn.bank("left", modifier);
+            } else if (usn.x - 40 <= gs.player.x && usn.x > gs.player.x && usn.x < 460) {
+                usn.bank("right", modifier);
+            } else {
+                usn.level();
+            }
+            return false;
+        }
+
+        usn.level();
+        if (usn.x + 40 > gs.player.x && usn.x - 40 < gs.player.x) {
+            return usn.offcd();
+        }
+
+        if (usn.x + 30 <= gs.player.x) {
+            usn.bank("right", modifier);
+        } else if (usn.x - 30 >= gs.player.x) {
+            usn.bank("left", modifier);
+        } else {
+            usn.level();
+        }
         return false;
     };
 
     return usn;
+}
+
+function HealthPickup(spr, newx, newy) {
+    var hpu = new GameEntity();
+
+    hpu.x = newx;
+    hpu.y = newy;
+    hpu.speed = 512;
+    hpu.height = 50;
+    hpu.width = hpu.height;
+    hpu.amount = Math.floor( Math.random() * 5 );
+
+    hpu.img = spr.imgs.healthpickup;
+
+    hpu.move = function (modifier) {
+        hpu.y += (hpu.speed) * modifier;
+    }
+
+    return hpu;
 }
 

@@ -6,18 +6,43 @@ function GameState(spr, snd)
 
     var gmst = {};
 
+    gmst.loadstats = function () {
+        var loadold = localStorage.getItem('hiscores');
+        if (null == loadold) {
+            return { 'kills': 0, 'distance': 0, 'wave': 0 };
+        }
+        return JSON.parse(loadold);
+    };
+
+    gmst.savestats = function () {
+        var savestats = {
+            'kills': gmst.hikill,
+            'distance': gmst.hidist,
+            'wave': gmst.hiwave
+        };
+        localStorage.setItem( 'hiscores', JSON.stringify(savestats) );
+    };
+
     gmst.reset = function () {
         // game states
         gmst.gameover = false;
         gmst.gamemenu = false;
         gmst.gamepaused = false;
+        gmst.victory = false;
         gmst.stage = 0;
+
+        var loadold = gmst.loadstats();
+        gmst.hikill = loadold['kills'];
+        gmst.hidist = loadold['distance'];
+        gmst.hiwave = loadold['wave'];
 
         // game entities
         gmst.player = new Player(spr, snd, 255, 450);
         gmst.enemieslist = new Array();
         gmst.playerbullets = new Array();
         gmst.enemybullets = new Array();
+        gmst.effects = new Array();
+        gmst.pickups = new Array();
     };
 
     gmst.spawnenemies = function () {
@@ -40,6 +65,18 @@ function GameState(spr, snd)
             var x = Math.random() * ( (cvs.width - 360) + 40);
             var y = Math.random() * (-1 * stagelength);
             gmst.enemieslist.push(new EnemyUSN(spr, snd, x, y));
+        }
+
+        var pickupcount = 1;
+        pickupcount = Math.floor(Math.random() * 3);
+        for (i = 0; i < pickupcount; ++i) {
+            var x = Math.random() * ( (cvs.width - 460) + 100);
+            var y = Math.random() * (-1 * stagelength);
+            gmst.pickups.push( new HealthPickup(spr, x, y) );
+        }
+
+        if (gmst.stage > 20) {
+            gmst.victory = true;
         }
     }
 
@@ -77,8 +114,14 @@ function GameState(spr, snd)
         var i = 0;
         for (i = gmst.enemieslist.length - 1; i >= 0; --i) {
             if (gmst.enemieslist[i].hitpoints < 1) {
+                gmst.effects.push( new Explosion( spr, gmst.enemieslist[i].x, gmst.enemieslist[i].y ) );
                 gmst.enemieslist.splice(i, 1);
                 ++gmst.player.kills;
+            }
+        }
+        for (i = gmst.effects.length - 1; i >= 0; --i) {
+            if ( gmst.effects[i].finished() ) {
+                gmst.effects.splice( i, 1 );
             }
         }
     };
@@ -102,6 +145,9 @@ function GameState(spr, snd)
         }
         for (i = gmst.enemybullets.length - 1; i >= 0; --i) {
             gmst.enemybullets[i].move(modifier);
+        }
+        for (i = gmst.pickups.length - 1; i >= 0; --i) {
+            gmst.pickups[i].move(modifier);
         }
     };
 
@@ -168,17 +214,36 @@ function GameState(spr, snd)
                 }
             }
         }
+
+        // health?
+        for (i = gmst.pickups.length - 1; i >= 0; --i) {
+            if ( gmst.checkbounds( gmst.pickups[i], gmst.player ) ) {
+                gmst.player.heal( gmst.pickups[i].amount );
+                gmst.pickups.splice(i, 1);
+            }
+        }
     };
 
     gmst.update = function (modifier) {
 
+        if (82 in gmst.keysdown) {
+            gmst.reset();
+        }
+
+        if (!spr.allReady()) { // check if loaded first
+            gmst.gamemenu = true;
+            return;
+        }
+        if (gmst.victory) {
+            return;
+        }
         if (gmst.gameover) {
-            if (82 in gmst.keysdown) {
-                gmst.reset();
-            }
             return;
         }
         if (gmst.gamemenu) {
+            if (82 in gmst.keysdown) {
+                gmst.reset();
+            }
             return;
         }
         if (gmst.gamepaused) {
@@ -187,6 +252,7 @@ function GameState(spr, snd)
             }
             return;
         }
+
 
         if (87 in gmst.keysdown && gmst.player.upper() > 36 ) { // up
             // hero.y -= (hero.speed * 0.75) * modifier;
@@ -235,8 +301,21 @@ function GameState(spr, snd)
             gmst.spawnenemies();
         }
 
+        if (gmst.player.kills > gmst.hikill) {
+            gmst.hikill = gmst.player.kills;
+        }
+
+        if (gmst.player.distance > gmst.hidist) {
+            gmst.hidist = gmst.player.distance;
+        }
+
+        if (gmst.stage > gmst.hiwave) {
+            gmst.hiwave = gmst.stage;
+        }
+
         if (gmst.player.hitpoints < 1) {
             gmst.gameover = true;
+            gmst.savestats();
         }
 
     };

@@ -35,6 +35,18 @@ function Renderer(spr)
         rdr.ctx.drawImage( object.img, object.x - (object.width / 2), object.y - (object.height / 2) );
     };
 
+    rdr.draw_exp = function (object) {
+        var expsx = (object.cycle / 10);
+        var expsy = (object.cycle % 10);
+        var expswidth = object.width;
+        var expsheight = object.height;
+        var expx = object.x - 50;
+        var expy = object.y - 50;
+        var expwidth = 100;
+        var expheight = 100;
+        rdr.ctx.drawImage ( object.img, expsx, expsy, expswidth, expsheight, expx, expy, expwidth, expheight ); 
+    };
+
     rdr.draw_rotated_img = function (object) {
         rdr.ctx.save();
         rdr.ctx.translate(object.x, object.y);
@@ -43,7 +55,7 @@ function Renderer(spr)
         rdr.ctx.restore();
     };
 
-    rdr.writestats = function (player, gmstage) {
+    rdr.writestats = function (player, gs) {
         rdr.ctx.fillStyle = "#995500";
         rdr.ctx.fillRect(rdr.gamewidth, 0, rdr.hudwidth, rdr.cvs.height);
 
@@ -69,15 +81,46 @@ function Renderer(spr)
         rdr.ctx.strokeText("HP: " + player.hitpoints + "/" + player.maxhp, xstart, ystart + 60);
         rdr.ctx.fillText("HP: " + player.hitpoints + "/" + player.maxhp, xstart, ystart + 60);
 
-        rdr.ctx.strokeText("Stage: " + gmstage, xstart, ystart + 90);
-        rdr.ctx.fillText("Stage: " + gmstage, xstart, ystart + 90);
+        rdr.ctx.strokeText("Stage: " + gs.stage, xstart, ystart + 90);
+        rdr.ctx.fillText("Stage: " + gs.stage, xstart, ystart + 90);
+
+        rdr.ctx.fillStyle = "black";
+        rdr.ctx.fillRect(xstart, ystart + 115, 250, 10);
+
+        rdr.ctx.fillStyle = "red";
+
+        rdr.ctx.strokeText("RECORD:", xstart, ystart + 150);
+        rdr.ctx.fillText("RECORD:", xstart, ystart + 150);
+
+        rdr.ctx.strokeText("Highest kills: " + gs.hikill, xstart, ystart + 180);
+        rdr.ctx.fillText("Highest kills: " + gs.hikill, xstart, ystart + 180);
+
+        rdr.ctx.strokeText("Furthest distance: " + gs.hidist, xstart, ystart + 210);
+        rdr.ctx.fillText("Furthest distance: " + gs.hidist, xstart, ystart + 210);
+
+        rdr.ctx.strokeText("Highest wave: " + gs.hiwave, xstart, ystart + 240);
+        rdr.ctx.fillText("Highest wave: " + gs.hiwave, xstart, ystart + 240);
 
         rdr.ctx.fillStyle = "rgb(10, 0, 0)";
         rdr.ctx.fillRect(rdr.gamewidth - 5, 0, 10, rdr.cvs.height);
-    }
+    };
 
     rdr.render_menustate = function () {
-        
+        rdr.ctx.save();
+        rdr.ctx.fillStyle = "grey";
+        rdr.ctx.strokeStyle = "black";
+        rdr.ctx.fillRect( 0, 0, rdr.cvs.width, rdr.cvs.height );
+        rdr.ctx.strokeRect( 0, 0, rdr.cvs.width, rdr.cvs.height );
+
+        var alignleft = rdr.cvs.width - 300;
+        rdr.ctx.fillStyle = "black";
+        rdr.ctx.fillText("Welcome to Showa 17!", alignleft, 200);
+        rdr.ctx.fillText("Controls: ", alignleft, 250);
+        rdr.ctx.fillText("Movement - mouse, wasd keys", alignleft, 300);
+        rdr.ctx.fillText("Shoot - left mouse button, space bar", alignleft, 350);
+        rdr.ctx.fillText("[P]ause/[U]npause", alignleft, 400);
+        rdr.ctx.fillText("[R]eset - also starts the game!", alignleft, 450);
+        rdr.ctx.fillText("Try to survive 20 waves!", alignleft, 500);
     };
 
     rdr.render_gamestate = function (gmst) {
@@ -99,9 +142,16 @@ function Renderer(spr)
             rdr.draw_img(gmst.enemieslist[i]);
         }
 
+        for (i = gmst.effects.length - 1; i >= 0; --i) {
+            rdr.draw_exp( gmst.effects[i] );
+        }
+        for (i = gmst.pickups.length - 1; i >= 0; --i) {
+            rdr.draw_img( gmst.pickups[i] );
+        }
+
         rdr.draw_img(gmst.player);
 
-        rdr.writestats(gmst.player, gmst.stage);
+        rdr.writestats(gmst.player, gmst);
 
         ++rdr.delay;
 
